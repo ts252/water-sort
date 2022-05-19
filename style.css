@@ -41,6 +41,14 @@ select {
     font-size: 18px;
 }
 
+#difficulty {
+    color: white;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 1em;
+}
+
 nav {
     display: flex;    
     top: 0;

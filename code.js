@@ -71,14 +71,14 @@ function isSensibleMove(game, from, to){
 function calcScore(game){
     return game.tubes.map(t => {
         if(t.length == 0){
-            return 8
+            return 2
         } else {
             let score = 1;
             for(let j = t.length - 1; j >= 0; j--){
                 if(t[j] == t.at(-1)) {
                     ++score
                     if(j == 0){
-                        score *= 3
+                        score *= score
                     }
                 } else {
                     break;
@@ -145,6 +145,9 @@ function init(nColours){
     let game = {
         tubes: []
     }
+
+    userUndos = 0
+    $("#undos").html("")
     
     let contents = []
     for(let i = 0; i < nColours; i++){
@@ -162,6 +165,13 @@ function init(nColours){
         
     history = [{game, moves: calculateMoves(game), moveIdx: 0}]
     everSeen = {}
+    steps = 0
+    undos = 0
+    while(!history.won && !history.impossible){
+        history = step(history)
+    }
+    $("#difficulty").html(`Difficulty: ${Math.round(steps / numTubes / numTubes * 10)}`)
+    history.length = 1
 }
 
 function makePalette(n){
@@ -225,9 +235,12 @@ $("#reset").on("click", () => {
     render(root, history[0].game, palette)
 })
 $("#undo").on("click", () => {
+    if(history.length < 2) return;
     history.pop()        
     pendingMove = -1
-    render(root, history.at(-1).game, palette)
+    render(root, history.at(-1).game, palette)    
+    $("#difficulty").html("Undo!")
+    $("#undos").html("(" + ++userUndos + ")")
 })
 $("#new").on("click", () => {
     init(numTubes)
@@ -240,7 +253,19 @@ $("#solve").on("click", () => {
     pendingMove = -1
     steps = 0
     undos = 0
-    render(root, history[0].game, palette)
+    let game = history.at(-1).game
+    let fromHere = [{game, moves:calculateMoves(game), moveIdx: 0}]
+    while(!fromHere.won && !fromHere.impossible){
+        fromHere = step(fromHere)
+    }    
+    if(fromHere.won){
+        history.push(fromHere[2])
+        render(root, history.at(-1).game, palette)
+    } else {
+        $("#difficulty").html("Can't solve from here!")
+    }
+
+}) /*
     
     solving = setInterval(() => {
         if(!history.won && !history.impossible){
@@ -254,7 +279,7 @@ $("#solve").on("click", () => {
             clearTimeout(solving)
         }
     }, 3)
-})
+})*/
 
 $("#numTubes").on("change", function(){
     numTubes = $(this).val()-0
