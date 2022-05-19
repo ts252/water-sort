@@ -1,0 +1,84 @@
+#game {
+    display: flex;     
+    align-content: bottom; 
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #111;
+    font-size: 16px;
+    font-family: Roboto, sans-serif;
+
+}
+
+.button {
+    border: 1px solid #444;
+    width: 10em;
+    text-align: center;
+    height: 2em;
+    vertical-align: middle;
+    line-height: 2em;
+}
+
+.tubec {
+    overflow: hidden;    
+    position: relative;
+    top: 0;
+    left: 0;
+    transition: top 0.15s ease-out, transform 0.3s ease-out, left 0.3s ease-in-out;
+    transform-origin: top right;
+    transform: rotate(0)
+}
+
+nav {
+    display: flex;    
+    top: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: 1em;    
+    justify-content: flex-end;
+    margin-bottom: 2em;
+}
+
+.button {
+    color: white;
+    cursor: pointer;
+}
+
+.button:hover {
+    background: #333;
+}
+
+.tube {
+    font-size: 30px;
+    height: 4em;
+    display: flex;
+    flex-direction: column-reverse;
+    margin: 1em;
+    border-radius: 15px;
+    overflow: hidden;
+    padding-top: 30px;
+    border-bottom: 1px solid white;
+    border-left: 1px solid white;
+    border-right: 1px solid white;
+    width: 1em;
+    position: relative;
+    top: -1.5em;        
+}
+
+.tipping {
+    transform: rotate(135deg);
+}
+
+.selected {
+    top: -20px;
+}
+
+.tube div {
+
+    width: 1em;         
+}
