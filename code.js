@@ -2,6 +2,8 @@ let history
 
 let everSeen 
 
+let numTubes = 5
+
 const myrng = new Math.seedrandom(Date.now());
 
 function pad(a, len){
@@ -48,29 +50,66 @@ function isValidMove(game, from, to){
     const tfrom = game.tubes[from]
     const tto = game.tubes[to]
     return from != to &&
-           tfrom.length != 0 &&
-           !(tfrom.length == 4 && tfrom.every(c => c == tfrom[0])) &&
+           tfrom.length != 0 &&           
            tto.length < 4 &&
                 (tto.length == 0 ||
                 tto.at(-1) == tfrom.at(-1))
 }
 
-function findNextMove(game, lastFrom, lastTo){
-    for(let from = lastFrom; from < game.tubes.length; from++){
-        for(let to = from == lastFrom ? lastTo + 1: 0; to < game.tubes.length; to++){
-            if(isValidMove(game, from, to)){                
-                return {game: move(game, from, to), from, to}
+function isSensibleMove(game, from, to){
+    const tfrom = game.tubes[from]
+    const tto = game.tubes[to]
+    return from != to &&
+           tfrom.length != 0 &&
+           !(tfrom.length == 4 && tfrom.every(c => c == tfrom[0])) &&
+           !(tto.length == 0 && tfrom.every(c => c == tfrom[0])) &&
+           tto.length < 4 &&
+                (tto.length == 0 ||
+                tto.at(-1) == tfrom.at(-1))
+}
+
+function calcScore(game){
+    return game.tubes.map(t => {
+        if(t.length == 0){
+            return 8
+        } else {
+            let score = 1;
+            for(let j = t.length - 1; j >= 0; j--){
+                if(t[j] == t.at(-1)) {
+                    ++score
+                    if(j == 0){
+                        score *= 3
+                    }
+                } else {
+                    break;
+                }
+            }
+            return score;
+        }
+    }).reduce((a, b) => a + b)
+}
+
+function calculateMoves(game){
+    let moves = []
+    for(let from = 0; from < game.tubes.length; from++){
+        for(let to = 0; to < game.tubes.length; to++){
+            if(isSensibleMove(game, from, to)){                
+                const afterMove = move(game, from, to)
+                moves.push({game: afterMove, from, to, score: calcScore(afterMove)})
             }
         }
     }    
-    return null
+
+    moves.sort((a, b) => b.score - a.score)
+    return moves
 }
 
 function step(history){
+    ++steps
     const state = history.at(-1)
     let nextMove = state
-    while(nextMove != null && everSeen[JSON.stringify(nextMove.game)]){
-        nextMove = findNextMove(state.game, nextMove.from, nextMove.to)
+    while(nextMove && everSeen[JSON.stringify(nextMove.game)]){
+        nextMove = state.moves[state.moveIdx++]
     }
     if(!nextMove){
         //backtrack
@@ -80,6 +119,7 @@ function step(history){
             return history
         } else {
             history.pop()
+            ++undos
             const newstate = history.at(-1)
             newstate.to++
             return step(history)
@@ -88,9 +128,9 @@ function step(history){
         everSeen[JSON.stringify(nextMove.game)] = true        
         state.from = nextMove.from
         state.to = nextMove.to
-        history.push({game: nextMove.game, from: 0, to: -1})
+        history.push({game: nextMove.game, moves: calculateMoves(nextMove.game), moveIdx: 0})
         if(isWon(nextMove.game)){
-            console.log(`WIN!!! after ${history.length} moves`)
+            console.log(`WIN!!! after ${steps} steps, ${undos} undos: solved in ${history.length} moves`)
             history.won = true;
         }
         return history;
@@ -120,13 +160,13 @@ function init(nColours){
     game.tubes.push([])
     game.tubes.push([])
         
-    history = [{game, from: 0, to: -1}]
+    history = [{game, moves: calculateMoves(game), moveIdx: 0}]
     everSeen = {}
 }
 
 function makePalette(n){
     const base = myrng() * 360
-    const hs = [base, base + 30, base + 180, base + 210].map(x => x % 360)
+    const hs = [base, base + 40, base + 180, base + 230].map(x => x % 360)
     const svs = [55, 30, 80]
     
     rv = []
@@ -152,7 +192,7 @@ $("#game").on("click",".tubec",function(){
             let to = $(this).data("idx") - 0
             if(isValidMove(game, pendingMove, to)){
                 game = move(game, pendingMove, to)
-                history.push({game, from: pendingMove, to})
+                history.push({game, moves: calculateMoves(game), moveIdx: 0, from: pendingMove, to})
                 const el = $(this).parent().find(".tubec")[pendingMove]
                 $(el).addClass("tipping")
                 const tippingPos = (to - pendingMove - 1) * $(el).width()
@@ -190,14 +230,16 @@ $("#undo").on("click", () => {
     render(root, history.at(-1).game, palette)
 })
 $("#new").on("click", () => {
-    init(8)
+    init(numTubes)
     render(root, history.at(-1).game, palette)
 })
 
-let solving 
+let solving, steps, undos
 $("#solve").on("click", () => {    
     everSeen = {}
     pendingMove = -1
+    steps = 0
+    undos = 0
     render(root, history[0].game, palette)
     
     solving = setInterval(() => {
@@ -211,9 +253,16 @@ $("#solve").on("click", () => {
         } else {
             clearTimeout(solving)
         }
-    }, 50)
+    }, 3)
 })
 
-init(8)
-palette = makePalette(8)
+$("#numTubes").on("change", function(){
+    numTubes = $(this).val()-0
+    init(numTubes)
+    palette = makePalette(numTubes)
+    render(root, history.at(-1).game, palette)
+})
+
+init(numTubes)
+palette = makePalette(numTubes)
 render(root, history.at(-1).game, palette)

@@ -1,6 +1,7 @@
 #game {
     display: flex;     
     align-content: bottom; 
+    justify-content: center;
 }
 
 body, html {
@@ -32,6 +33,12 @@ body {
     transition: top 0.15s ease-out, transform 0.3s ease-out, left 0.3s ease-in-out;
     transform-origin: top right;
     transform: rotate(0)
+}
+
+select {
+    color: white;
+    background: #111;
+    font-size: 18px;
 }
 
 nav {
