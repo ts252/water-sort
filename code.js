@@ -237,7 +237,7 @@ $("#game").addEventListener("click", filterHandler(".tubec", (el) => {
         if(pendingMove > -1){
             let to = el.getAttribute("data-idx") - 0
             if(isValidMove(game, pendingMove, to)){
-                solution = null
+                activeSolution = null
                 game = move(game, pendingMove, to)
                 history.push({game, from: pendingMove, to})
                 const fromEl = el.parentNode.querySelectorAll(".tubec")[pendingMove]
