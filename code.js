@@ -307,6 +307,10 @@ $("#numTubes").on("change", function(){
     render(root, history.at(-1).game, palette)
 })
 
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js');
+}
+
 init(numTubes)
 palette = makePalette(numTubes)
 render(root, history.at(-1).game, palette)

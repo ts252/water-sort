@@ -1,6 +1,6 @@
 #game {
     display: flex;     
-    align-content: bottom; 
+    flex-wrap: wrap;
     justify-content: center;
 }
 
