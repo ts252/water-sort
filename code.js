@@ -6,9 +6,13 @@ let numTubes = 5
 
 const myrng = new Math.seedrandom(Date.now());
 
-function pad(a, len){
-    return a.slice(0, len).concat(["", "", "", ""].slice(0, len - a.length))
-}
+$ = x => document.querySelector(x)
+filterHandler = (sel, h) => (evt => {
+    const el = evt.path.find(e => e.matches(sel))
+    if(el){
+        return h(el)
+    }
+})
 
 function render(root, game, palette){
     let idx = 0;
@@ -154,7 +158,7 @@ function init(nColours){
     }
 
     userUndos = 0
-    $("#undos").html("")
+    $("#undos").innerHTML = ""
     
     let contents = []
     for(let i = 0; i < nColours; i++){
@@ -177,7 +181,7 @@ function init(nColours){
     while(!history.won && !history.impossible){
         history = step(history)
     }
-    $("#difficulty").html(`Difficulty: ${Math.round(steps / numTubes / numTubes * 10)}`)
+    $("#difficulty").innerHTML = `Difficulty: ${Math.round(steps / numTubes / numTubes * 10)}`
     history.length = 1
 }
 
@@ -199,75 +203,80 @@ let pendingMove = -1
 let palette 
 let root = document.querySelector("#game")
 
-$("#game").on("click",".tubec",function(){
+$("#game").addEventListener("click", filterHandler(".tubec", (el) => {
     let game = history.at(-1).game
-    if($(this).hasClass("selected")){
-        $(this).removeClass("selected")
+    if(el.classList.contains("selected")){
+        el.classList.remove("selected")
         pendingMove = -1
     } else {
         if(pendingMove > -1){
-            let to = $(this).data("idx") - 0
+            let to = el.getAttribute("data-idx") - 0
             if(isValidMove(game, pendingMove, to)){
                 game = move(game, pendingMove, to)
                 history.push({game, moves: calculateMoves(game), moveIdx: 0, from: pendingMove, to})
-                const el = $(this).parent().find(".tubec")[pendingMove]
-                $(el).addClass("tipping")
-                const tippingPos = (to - pendingMove - 1) * $(el).width()
-                $(el).css({left: tippingPos})
+                const fromEl = el.parentNode.querySelectorAll(".tubec")[pendingMove]
+                fromEl.classList.add("tipping")
+                const tippingPos = (to - pendingMove - 1) * el.clientWidth
+                fromEl.setAttribute("style", `left: ${tippingPos}px`);
 
-                const dest = $($(this).parent().find(".tubec")[to]).find(".tube")
-                const grower = $(el).find(".tube div:last-child").clone().addClass("new")
-                grower.appendTo(dest)
+                const dest = el.parentNode.querySelectorAll(".tubec")[to].querySelector(".tube")
+                const grower = fromEl.querySelector(".tube div:last-child").cloneNode(true)
+                grower.classList.add("new")
+                dest.appendChild(grower)
                 setTimeout(() => {
-                    grower.removeClass("new")
+                    grower.classList.remove("new")
                 }, 1)
 
                 if(game.tubes[to].length == 4 && 
                     game.tubes[to].every(c => c == game.tubes[to][0])){
-                    dest.closest(".tubec").find(".straw").addClass("visible")
+                    el.parentNode.querySelectorAll(".tubec")[to]    
+                        .querySelector(".straw")
+                        .classList.add("visible")
                 }
                 
                 setTimeout(() => {
-                    $(el).removeClass("tipping")
-                    $(el).css({left: 0})
+                    fromEl.classList.remove("tipping")
+                    fromEl.setAttribute("style", "left: 0")
                     setTimeout(() => {
+                        fromEl.querySelector("div.water:last-child").remove()
+                        
+                        //@@@should not be necessary but there are bugs pouring n>1 waters
                         render(root, game, palette)
                     }, 150)
-                }, 400)
-                
-            } else {                
-                $(".selected").removeClass("selected")                
-            }
-            pendingMove = -1
+                }, 400)            
+            }          
+
+            document.querySelectorAll(".selected").forEach(el => {el.classList.remove("selected")})
+            pendingMove = -1        
         } else {
-            pendingMove = $(this).data("idx") - 0
-            $(this).addClass("selected")
+            pendingMove = el.getAttribute("data-idx") - 0
+            el.classList.add("selected")
         }
             
     }
-})
+}))
 
-$("#reset").on("click", () => {
+$("#reset").addEventListener("click", () => {
     history = [{game: history[0].game, from: 0, to: -1}]
     everSeen = {}
     pendingMove = -1
     render(root, history[0].game, palette)
 })
-$("#undo").on("click", () => {
+$("#undo").addEventListener("click", () => {
     if(history.length < 2) return;
     history.pop()        
     pendingMove = -1
     render(root, history.at(-1).game, palette)    
-    $("#difficulty").html("Undo!")
-    $("#undos").html("(" + ++userUndos + ")")
+    $("#difficulty").innerHTML = "Undo!"
+    $("#undos").innerHTML = "(" + ++userUndos + ")"
 })
-$("#new").on("click", () => {
+$("#new").addEventListener("click", () => {
     init(numTubes)
     render(root, history.at(-1).game, palette)
 })
 
 let solving, steps, undos
-$("#solve").on("click", () => {    
+$("#solve").addEventListener("click", () => {    
     everSeen = {}
     pendingMove = -1
     steps = 0
@@ -281,7 +290,7 @@ $("#solve").on("click", () => {
         history.push(fromHere[2])
         render(root, history.at(-1).game, palette)
     } else {
-        $("#difficulty").html("Can't solve from here!")
+        $("#difficulty").innerHTML = "Can't solve from here!"
     }
 
 }) /*
@@ -339,8 +348,8 @@ window.addEventListener('beforeinstallprompt', (event) => {
   });
 
 
-$("#numTubes").on("change", function(){
-    numTubes = $(this).val()-0
+$("#numTubes").addEventListener("change", function(){
+    numTubes = this.value - 0
     init(numTubes)
     palette = makePalette(numTubes)
     render(root, history.at(-1).game, palette)
