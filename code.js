@@ -21,9 +21,16 @@ function render(root, game, palette){
                 amalgamated.at(-1).n++
             }
         }
-        return  `<div class="tubec" data-idx="${idx++}"><div class="tube">` + amalgamated.map(({c, n}) => 
-            `<div class="c${c}" style="height: ${n}em; background-color: ${palette[c]}"/></div>`
-        ).join("") + "</div></div>"        
+        const done = amalgamated.length == 1 && amalgamated[0].n == 4
+        return  `<div class="tubec" data-idx="${idx++}">
+            <div class="straw ${done ? "visible" : ""}">
+                <div class="stem"></div><div class="mouthpiece"></div>
+            </div>
+            <div class="topmask">
+                <div class="tube">` + amalgamated.map(({c, n}) => 
+                    `<div class="water c${c} n${n}" style="background-color: ${palette[c]}"/></div>`
+                    ).join("") + 
+            "</div></div></div>"        
     }).join("\n")
 }
 
@@ -207,6 +214,18 @@ $("#game").on("click",".tubec",function(){
                 $(el).addClass("tipping")
                 const tippingPos = (to - pendingMove - 1) * $(el).width()
                 $(el).css({left: tippingPos})
+
+                const dest = $($(this).parent().find(".tubec")[to]).find(".tube")
+                const grower = $(el).find(".tube div:last-child").clone().addClass("new")
+                grower.appendTo(dest)
+                setTimeout(() => {
+                    grower.removeClass("new")
+                }, 1)
+
+                if(game.tubes[to].length == 4 && 
+                    game.tubes[to].every(c => c == game.tubes[to][0])){
+                    dest.closest(".tubec").find(".straw").addClass("visible")
+                }
                 
                 setTimeout(() => {
                     $(el).removeClass("tipping")
@@ -214,7 +233,7 @@ $("#game").on("click",".tubec",function(){
                     setTimeout(() => {
                         render(root, game, palette)
                     }, 150)
-                }, 300)
+                }, 400)
                 
             } else {                
                 $(".selected").removeClass("selected")                
