@@ -1,12 +1,7 @@
 {
   "short_name": "Crazy Shakes",
   "name": "Crazy Shakes sorting game",
-  "icons": [
-    {
-      "src": "/images/icons-vector.svg",
-      "type": "image/svg+xml",
-      "sizes": "512x512"
-    },
+  "icons": [   
     {
       "src": "/images/icons-192.png",
       "type": "image/png",
@@ -29,7 +24,7 @@
       "short_name": "12",
       "description": "Start a 12-colour game",
       "url": "/?source=pwa&tubes=12",
-      "icons": [{ "src": "/images/tomorrow.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/images/12.png", "sizes": "192x192" }]
     }
   ],
   "description": "Sort those crazy shakes!",
