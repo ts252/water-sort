@@ -7,6 +7,7 @@ let activeSolution
 
 const myrng = new Math.seedrandom(Date.now());
 
+
 const $ = x => document.querySelector(x)
 const filterHandler = (sel, h) => (evt => {
     const el = evt.path.find(e => e.matches && e.matches(sel))
@@ -235,7 +236,46 @@ function init(nColours){
     
     const {solution, steps, undos} = solver.solve(game)
     activeSolution = solution
-    $("#difficulty").innerHTML = `Difficulty: ${Math.round(steps / numTubes / numTubes * 10)}`    
+    showMessage(`Difficulty: ${Math.round(steps / numTubes / numTubes * 10)}`    )
+}
+
+const ONE_SIXTH = 1 / 6;
+const ONE_THIRD = 1 / 3;
+const TWO_THIRDS = 2 / 3;
+
+const hue2rgb = (p, q, t) => {
+  if (t < 0) {
+    t += 1;
+  }
+  if (t > 1) {
+    t-= 1;
+  }
+  if (t < ONE_SIXTH) {
+    return p + (q - p) * 6 * t;
+  }
+  if (t < 0.5) {
+    return q;
+  }
+  if (t < TWO_THIRDS) {
+    return p + (q - p) * (TWO_THIRDS - t) * 6;
+  }
+  return p;
+};
+
+const hsl2rgb = (h, s, l) => {
+  if (s === 0) {
+    return new Array(3).fill(l);
+  }
+  const q =
+    l < 0.5 ?
+      l * s + l :
+      l + s - l * s;
+  const p = 2 * l - q;
+  return [
+    hue2rgb(p, q, h + ONE_THIRD),
+    hue2rgb(p, q, h),
+    hue2rgb(p, q, h - ONE_THIRD),
+  ];
 }
 
 function makePalette(n){
@@ -246,7 +286,12 @@ function makePalette(n){
     let rv = []
     for(const sv of svs){
         for(const h of hs){
-            rv.push(`hsl(${h}deg ${sv}% ${sv}%)`)
+            rv.push(
+                hsl2rgb(h / 360, sv / 100, sv / 100)
+                    .map(x => Math.round(x * 255))
+                    .map(x => x > 15 ? x.toString(16) : "0" + x.toString(16))
+                    .join("")
+            )                    
         }
     }
     return rv;
@@ -258,8 +303,8 @@ let root = document.querySelector("#game")
 
 function animatePour(game, el, from, to){
     const fromEl = document.querySelector(`.tubec[data-idx="${from}"]`)    
-    const tippingPosX = el.offsetLeft - fromEl.offsetLeft - 61
-    const tippingPosY = el.parentNode.parentNode.offsetTop - fromEl.parentNode.parentNode.offsetTop - 5
+    const tippingPosX = el.offsetLeft - fromEl.offsetLeft - 58
+    const tippingPosY = el.parentNode.parentNode.offsetTop - fromEl.parentNode.parentNode.offsetTop - 7
     fromEl.setAttribute("style", `left: ${tippingPosX}px; top: ${tippingPosY}px`);
 
     fromEl.classList.add("tipping")
@@ -277,22 +322,28 @@ function animatePour(game, el, from, to){
     if(game.tubes[to].length == 4 && 
         game.tubes[to].every(c => c == game.tubes[to][0])){
         dest.querySelector(".straw")
-            .classList.add("visible")                    
-    }
+            .classList.add("visible")                            
+    }   
     
     setTimeout(() => {
         fromEl.classList.remove("tipping")
-        fromEl.setAttribute("style", "left: 0")
+        fromEl.setAttribute("style", "left: 0")        
         setTimeout(() => {
             fromEl.querySelector("div.water:last-child").remove()
             dest.classList.remove("receiving")
+
+            if(game.tubes.every(t => t.length == 0 || (t.length == 4 && t.every(c => c == t[0])))){
+                winAnimation()
+                showMessage("Awesome!")
+            }
             
             //@@@should not be necessary but there are bugs pouring n>1 waters
             setTimeout(() => {
-            render(root, game, palette)
+                render(root, game, palette)
             }, 100);
         }, 150)
-    }, 600)            
+    }, 600)        
+        
 }
 
 $("#game").addEventListener("click", filterHandler(".tubec", (el) => {
@@ -320,11 +371,24 @@ $("#game").addEventListener("click", filterHandler(".tubec", (el) => {
     }
 }))
 
+let hideMessageHandle
+function showMessage(msg){
+    $("#difficulty").innerHTML = msg
+    $("#difficulty").classList.add("visible")
+    if(hideMessageHandle){
+        clearTimeout(hideMessageHandle)
+    }
+    hideMessageHandle = setTimeout(() => {
+        $("#difficulty").classList.remove("visible")
+    }, 4000)
+}
+
 $("#reset").addEventListener("click", () => {
     history = [{game: history[0].game}]    
     pendingMove = -1
     userUndos = 0
     activeSolution = null
+    showMessage("Reset!")
     $("#undos").innerHTML = ""
     render(root, history[0].game, palette)
 })
@@ -334,7 +398,7 @@ $("#undo").addEventListener("click", () => {
     pendingMove = -1
     activeSolution = null
     render(root, history.at(-1).game, palette)    
-    $("#difficulty").innerHTML = "Undo!"
+    showMessage("Undo!")
     $("#undos").innerHTML = "(" + ++userUndos + ")"
 })
 $("#new").addEventListener("click", () => {
@@ -348,7 +412,7 @@ $("#solve").addEventListener("click", () => {
         const stats = solver.solve(history.at(-1).game)        
         
         if(!stats){
-            $("#difficulty").innerHTML = "Can't solve from here!"
+            showMessage("Can't solve from here!")
             activeSolution = null
         } else {
             activeSolution = stats.solution            
@@ -360,7 +424,43 @@ $("#solve").addEventListener("click", () => {
     }
     
     render(root, history.at(-1).game, palette)
+
+    if(history.at(-1).game.tubes.every(t => t.length == 0 || (t.length == 4 && t.every(c => c == t[0])))){
+        winAnimation()
+        $("#difficulty").innerHTML("I solved it! Can you?")
+    }
 }) 
+
+function getTubePos(idx){
+    const el = document.querySelector(`.tubec[data-idx="${idx}"]`)
+    return {
+        x: (el.offsetLeft + el.offsetWidth / 2) / window.innerWidth,
+        y: (el.offsetTop + el.offsetHeight * 2 / 3) / window.innerHeight
+    }
+}
+
+function winAnimation(){
+    let delay = 300
+    let increment = 300
+    let idx = 0
+    for(const t of history.at(-1).game.tubes){
+        if(t.length){
+            let pos = getTubePos(idx++)
+            setTimeout(() => {
+                confetti({
+                    particleCount: 20,
+                    colors: [palette[t[0]]],
+                    useWorker: true,
+                    origin: pos
+                })
+            }, Math.round(delay))
+            delay += increment
+            increment = increment * 0.8
+        } else {
+            ++idx
+        }
+    }
+}
 
 const divInstall = document.getElementById('installContainer');
 const butInstall = document.getElementById('butInstall');

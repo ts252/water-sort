@@ -78,6 +78,12 @@ select {
     font-size: 20px;
     font-weight: bold;
     margin: 1em;
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+}
+
+#difficulty.visible {
+    opacity: 1;
 }
 
 nav {
@@ -126,6 +132,8 @@ nav {
 .tipping {
     transform: rotate(135deg);
     z-index: 5;
+    pointer-events: none;
+    touch-action: none;
 }
 
 .tipping .water {
