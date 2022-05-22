@@ -238,7 +238,7 @@ let root = document.querySelector("#game")
 
 function animatePour(game, el, from, to){
     const fromEl = document.querySelector(`.tubec[data-idx="${from}"]`)    
-    const tippingPosX = el.offsetLeft - fromEl.offsetLeft -35
+    const tippingPosX = el.offsetLeft - fromEl.offsetLeft - 61
     const tippingPosY = el.parentNode.parentNode.offsetTop - fromEl.parentNode.parentNode.offsetTop - 5
     fromEl.setAttribute("style", `left: ${tippingPosX}px; top: ${tippingPosY}px`);
 

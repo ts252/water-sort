@@ -34,6 +34,7 @@ body {
     position: relative;
     top: 0;
     left: 0;
+    padding: 0 20px 20px 20px;
     transition: top 0.15s ease-out, transform 0.5s ease-out, left 0.3s ease-in-out;
     transform-origin: top right;
     transform: rotate(0);
@@ -53,7 +54,7 @@ body {
     background: white;
     top: -25px;
     bottom: 236px;
-    left: 2px;
+    left: 28px;
     transition: top 0.25s 0.45s ease-out, bottom 0.2s 0.3s ease-out;
 }
 
@@ -165,8 +166,8 @@ nav {
     transform: rotate(6deg);
     left: 2.53em;
     opacity: 0;
-    top: -300px;
-    transition: top 0.2s 0.5s ease-in;
+    top: -500px;
+    transition: top 0.4s 0.5s ease-in;
 
 }
 
