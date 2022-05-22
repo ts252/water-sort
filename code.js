@@ -35,7 +35,7 @@ function render(root, game, palette){
                 <div class="tube">` + amalgamated.map(({c, n}) => 
                     `<div class="water c${c} n${n}" style="background-color: ${palette[c]}"/></div>`
                     ).join("") + 
-            "</div></div></div>"        
+            `</div></div><div class="drip"></div></div>`
     }).join("\n")
 }
 
@@ -242,22 +242,24 @@ $("#game").addEventListener("click", filterHandler(".tubec", (el) => {
                 history.push({game, from: pendingMove, to})
                 const fromEl = el.parentNode.querySelectorAll(".tubec")[pendingMove]
                 fromEl.classList.add("tipping")
-                const tippingPos = (to - pendingMove - 1) * el.clientWidth
+                const tippingPos = (to - pendingMove - 1) * el.clientWidth + 10
                 fromEl.setAttribute("style", `left: ${tippingPos}px`);
 
-                const dest = el.parentNode.querySelectorAll(".tubec")[to].querySelector(".tube")
+                const dest = el.parentNode.querySelectorAll(".tubec")[to]
                 const grower = fromEl.querySelector(".tube div:last-child").cloneNode(true)
                 grower.classList.add("new")
-                dest.appendChild(grower)
+                dest.querySelector(".tube").appendChild(grower)
+                dest.querySelector(".drip").setAttribute("style", 
+                    grower.getAttribute("style"))
+                dest.classList.add("receiving")
                 setTimeout(() => {
                     grower.classList.remove("new")
                 }, 1)
 
                 if(game.tubes[to].length == 4 && 
                     game.tubes[to].every(c => c == game.tubes[to][0])){
-                    el.parentNode.querySelectorAll(".tubec")[to]    
-                        .querySelector(".straw")
-                        .classList.add("visible")
+                    dest.querySelector(".straw")
+                        .classList.add("visible")                    
                 }
                 
                 setTimeout(() => {
@@ -265,11 +267,12 @@ $("#game").addEventListener("click", filterHandler(".tubec", (el) => {
                     fromEl.setAttribute("style", "left: 0")
                     setTimeout(() => {
                         fromEl.querySelector("div.water:last-child").remove()
+                        dest.classList.remove("receiving")
                         
                         //@@@should not be necessary but there are bugs pouring n>1 waters
                         render(root, game, palette)
                     }, 150)
-                }, 400)            
+                }, 600)            
             }          
 
             document.querySelectorAll(".selected").forEach(el => {el.classList.remove("selected")})

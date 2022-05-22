@@ -33,10 +33,28 @@ body {
     position: relative;
     top: 0;
     left: 0;
-    transition: top 0.15s ease-out, transform 0.3s ease-out, left 0.3s ease-in-out;
+    transition: top 0.15s ease-out, transform 0.5s ease-out, left 0.3s ease-in-out;
     transform-origin: top right;
     transform: rotate(0)
 }
+
+.drip {
+    position: absolute;
+    width: 3px;
+    
+    background: white;
+    top: -25px;
+    bottom: 236px;
+    left: 2em;
+    transition: top 0.25s 0.45s ease-out, bottom 0.2s 0.3s ease-out;
+}
+
+.receiving .drip {
+    bottom: 85px;
+    top: 120px;
+}
+
+
 
 select {
     color: white;
@@ -90,6 +108,11 @@ nav {
 
 .tipping {
     transform: rotate(135deg);
+    z-index: 5;
+}
+
+.tipping .water {
+    opacity: 1;
 }
 
 .tipping .tube div.water:last-child, #game .new {
@@ -101,10 +124,11 @@ nav {
 }
 
 .tube div.water {
-    transition: height 0.3s 0.2s ease-out;
+    transition: height 0.3s 0.3s ease-out;
     height: 1em;
     width: 1em;   
     z-index: 2;      
+    opacity: 0.9;
 }
 
 .tube div.n2 {
@@ -125,7 +149,7 @@ nav {
     left: 2.53em;    
     opacity: 0;
     top: -300px;
-    transition: top 0.2s ease-in;    
+    transition: top 0.2s 0.5s ease-in;    
 
 }
 
