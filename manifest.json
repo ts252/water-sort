@@ -3,39 +3,39 @@
   "name": "Crazy Shakes sorting game",
   "icons": [   
     {
-      "src": "/images/icons-192.png",
+      "src": "images/icons-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/images/icons-512.png",
+      "src": "images/icons-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
-  "start_url": "/?source=pwa",
+  "start_url": "/water-sort/?source=pwa",
   "background_color": "#111111",
   "display": "standalone",
-  "scope": "/",
+  "scope": "/water-sort/",
   "theme_color": "#111111",
   "shortcuts": [   
     {
       "name": "12 colour game",
       "short_name": "12",
       "description": "Start a 12-colour game",
-      "url": "/?source=pwa&tubes=12",
-      "icons": [{ "src": "/images/12.png", "sizes": "192x192" }]
+      "url": "/water-sort/?source=pwa&tubes=12",
+      "icons": [{ "src": "images/12.png", "sizes": "192x192" }]
     }
   ],
   "description": "Sort those crazy shakes!",
   "screenshots": [
     {
-      "src": "/images/screenshot1.png",
+      "src": "images/screenshot1.png",
       "type": "image/png",
       "sizes": "540x720"
     },
     {
-      "src": "/images/screenshot2.jpg",
+      "src": "images/screenshot2.jpg",
       "type": "image/jpg",
       "sizes": "540x720"
     }
