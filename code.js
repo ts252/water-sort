@@ -283,8 +283,7 @@ $("#game").addEventListener("click", filterHandler(".tubec", (el) => {
 }))
 
 $("#reset").addEventListener("click", () => {
-    history = [{game: history[0].game}]
-    everSeen = {}
+    history = [{game: history[0].game}]    
     pendingMove = -1
     userUndos = 0
     activeSolution = null
