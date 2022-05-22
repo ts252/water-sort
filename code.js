@@ -16,7 +16,27 @@ const filterHandler = (sel, h) => (evt => {
 })
 
 function render(root, game, palette){
-    const perRowMap = [0, 1, 2, 3, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 5, 6, 6, 6, 7, 7, 7]
+    const perRowMap = {
+        0: 0, 
+        1: 1, 
+        2: 2, 
+        3: 3, 
+        4: 2, 
+        5: 3, 
+        6: 3, 
+        7: 4, 
+        8: 4, 
+        9: 5, 
+        10: 5, 
+        11: 6, 
+        12: 6, 
+        13: 5, 
+        14: 5, 
+        15: 5, 
+        16: 6, 
+        17: 6, 
+        18: 6
+    }
     const perRow = perRowMap[game.tubes.length]
 
     let idx = 0;
