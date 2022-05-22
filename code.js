@@ -50,13 +50,13 @@ function render(root, game, palette){
             }
         }
         const done = amalgamated.length == 1 && amalgamated[0].n == 4
-        return  `<div class="growable"><div class="tubec" data-idx="${idx++}">
+        return  `<div class="growable"><div class="tubec ${pendingMove == idx ? "selected" : ""}" data-idx="${idx++}">
             <div class="straw ${done ? "visible" : ""}">
                 <div class="stem"></div><div class="mouthpiece"></div>
             </div>
             <div class="topmask">
                 <div class="tube">` + amalgamated.map(({c, n}) => 
-                    `<div class="water c${c} n${n}" style="background-color: ${palette[c]}"/></div>`
+                    `<div class="water c${c} n${n}" style="background-color: #${palette[c]}"/></div>`
                     ).join("") + 
             `</div></div><div class="drip"></div></div></div>`
     })
@@ -288,7 +288,9 @@ function animatePour(game, el, from, to){
             dest.classList.remove("receiving")
             
             //@@@should not be necessary but there are bugs pouring n>1 waters
+            setTimeout(() => {
             render(root, game, palette)
+            }, 100);
         }, 150)
     }, 600)            
 }
