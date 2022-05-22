@@ -1,10 +1,11 @@
-#game {
-    display: flex;     
-    flex-wrap: wrap;
+#game .row {
+    display: flex;
     justify-content: center;
+    flex-shrink: 1;
 }
 
-body, html {
+body,
+html {
     margin: 0;
     padding: 0;
 }
@@ -35,17 +36,24 @@ body {
     left: 0;
     transition: top 0.15s ease-out, transform 0.5s ease-out, left 0.3s ease-in-out;
     transform-origin: top right;
-    transform: rotate(0)
+    transform: rotate(0);
+}
+
+.growable {
+    flex-shrink: 1;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
 }
 
 .drip {
     position: absolute;
     width: 3px;
-    
+
     background: white;
     top: -25px;
     bottom: 236px;
-    left: 2em;
+    left: 2px;
     transition: top 0.25s 0.45s ease-out, bottom 0.2s 0.3s ease-out;
 }
 
@@ -71,11 +79,11 @@ select {
 }
 
 nav {
-    display: flex;    
+    display: flex;
     top: 0;
     left: 0;
     right: 0;
-    padding-bottom: 1em;    
+    padding-bottom: 1em;
     justify-content: flex-end;
     margin-bottom: 5em;
 }
@@ -94,7 +102,7 @@ nav {
     height: 4em;
     display: flex;
     flex-direction: column-reverse;
-    margin: 1em;
+    margin-top: 1em;
     border-radius: 15px;
     overflow: hidden;
     padding-top: 30px;
@@ -103,7 +111,7 @@ nav {
     border-right: 1px solid white;
     width: 1em;
     position: relative;
-    top: -1.5em;        
+    top: -1.5em;
 }
 
 .tipping {
@@ -115,7 +123,8 @@ nav {
     opacity: 1;
 }
 
-.tipping .tube div.water:last-child, #game .new {
+.tipping .tube div.water:last-child,
+#game .new {
     height: 0px;
 }
 
@@ -126,8 +135,8 @@ nav {
 .tube div.water {
     transition: height 0.3s 0.3s ease-out;
     height: 1em;
-    width: 1em;   
-    z-index: 2;      
+    width: 1em;
+    z-index: 2;
     opacity: 0.9;
 }
 
@@ -146,10 +155,10 @@ nav {
 .straw {
     position: absolute;
     transform: rotate(6deg);
-    left: 2.53em;    
+    left: 2.53em;
     opacity: 0;
     top: -300px;
-    transition: top 0.2s 0.5s ease-in;    
+    transition: top 0.2s 0.5s ease-in;
 
 }
 
@@ -161,7 +170,7 @@ nav {
 .straw div {
     background-color: white;
     position: relative;
-    width: 2px;    
+    width: 2px;
 }
 
 .straw .stem {
@@ -171,7 +180,7 @@ nav {
 .straw .mouthpiece {
     height: 20px;
     transform: rotate(40deg);
-    top: -137px;    
+    top: -137px;
     left: 6px;
 }
 

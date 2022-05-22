@@ -9,15 +9,18 @@ const myrng = new Math.seedrandom(Date.now());
 
 const $ = x => document.querySelector(x)
 const filterHandler = (sel, h) => (evt => {
-    const el = evt.path.find(e => e.matches(sel))
+    const el = evt.path.find(e => e.matches && e.matches(sel))
     if(el){
         return h(el)
     }
 })
 
 function render(root, game, palette){
+    const perRowMap = [0, 1, 2, 3, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 5, 6, 6, 6, 7, 7, 7]
+    const perRow = perRowMap[game.tubes.length]
+
     let idx = 0;
-    root.innerHTML = game.tubes.map(t => {            
+    const tubehtml = game.tubes.map(t => {            
         let amalgamated = []
         for(let c of t){
             if(amalgamated.length == 0 || c != amalgamated.at(-1).c){
@@ -27,7 +30,7 @@ function render(root, game, palette){
             }
         }
         const done = amalgamated.length == 1 && amalgamated[0].n == 4
-        return  `<div class="tubec" data-idx="${idx++}">
+        return  `<div class="growable"><div class="tubec" data-idx="${idx++}">
             <div class="straw ${done ? "visible" : ""}">
                 <div class="stem"></div><div class="mouthpiece"></div>
             </div>
@@ -35,8 +38,13 @@ function render(root, game, palette){
                 <div class="tube">` + amalgamated.map(({c, n}) => 
                     `<div class="water c${c} n${n}" style="background-color: ${palette[c]}"/></div>`
                     ).join("") + 
-            `</div></div><div class="drip"></div></div>`
-    }).join("\n")
+            `</div></div><div class="drip"></div></div></div>`
+    })
+    let rows = []
+    for(let i = 0; i < tubehtml.length + perRow; i += perRow){
+        rows.push(`<div class="row">${tubehtml.slice(i, i + perRow).join("\n")}</div>`)
+    }
+    root.innerHTML = rows.join("\n")
 }
 
 function shuffle(array) {
@@ -228,6 +236,43 @@ let pendingMove = -1
 let palette 
 let root = document.querySelector("#game")
 
+function animatePour(game, el, from, to){
+    const fromEl = document.querySelector(`.tubec[data-idx="${from}"]`)    
+    const tippingPosX = el.offsetLeft - fromEl.offsetLeft -35
+    const tippingPosY = el.parentNode.parentNode.offsetTop - fromEl.parentNode.parentNode.offsetTop - 5
+    fromEl.setAttribute("style", `left: ${tippingPosX}px; top: ${tippingPosY}px`);
+
+    fromEl.classList.add("tipping")
+    const dest = document.querySelector(`.tubec[data-idx="${to}"]`)
+    const grower = fromEl.querySelector(".tube div:last-child").cloneNode(true)
+    grower.classList.add("new")
+    dest.querySelector(".tube").appendChild(grower)
+    dest.querySelector(".drip").setAttribute("style", 
+        grower.getAttribute("style"))
+    dest.classList.add("receiving")
+    setTimeout(() => {
+        grower.classList.remove("new")
+    }, 1)
+
+    if(game.tubes[to].length == 4 && 
+        game.tubes[to].every(c => c == game.tubes[to][0])){
+        dest.querySelector(".straw")
+            .classList.add("visible")                    
+    }
+    
+    setTimeout(() => {
+        fromEl.classList.remove("tipping")
+        fromEl.setAttribute("style", "left: 0")
+        setTimeout(() => {
+            fromEl.querySelector("div.water:last-child").remove()
+            dest.classList.remove("receiving")
+            
+            //@@@should not be necessary but there are bugs pouring n>1 waters
+            render(root, game, palette)
+        }, 150)
+    }, 600)            
+}
+
 $("#game").addEventListener("click", filterHandler(".tubec", (el) => {
     let game = history.at(-1).game
     if(el.classList.contains("selected")){
@@ -240,39 +285,7 @@ $("#game").addEventListener("click", filterHandler(".tubec", (el) => {
                 activeSolution = null
                 game = move(game, pendingMove, to)
                 history.push({game, from: pendingMove, to})
-                const fromEl = el.parentNode.querySelectorAll(".tubec")[pendingMove]
-                fromEl.classList.add("tipping")
-                const tippingPos = (to - pendingMove - 1) * el.clientWidth + 10
-                fromEl.setAttribute("style", `left: ${tippingPos}px`);
-
-                const dest = el.parentNode.querySelectorAll(".tubec")[to]
-                const grower = fromEl.querySelector(".tube div:last-child").cloneNode(true)
-                grower.classList.add("new")
-                dest.querySelector(".tube").appendChild(grower)
-                dest.querySelector(".drip").setAttribute("style", 
-                    grower.getAttribute("style"))
-                dest.classList.add("receiving")
-                setTimeout(() => {
-                    grower.classList.remove("new")
-                }, 1)
-
-                if(game.tubes[to].length == 4 && 
-                    game.tubes[to].every(c => c == game.tubes[to][0])){
-                    dest.querySelector(".straw")
-                        .classList.add("visible")                    
-                }
-                
-                setTimeout(() => {
-                    fromEl.classList.remove("tipping")
-                    fromEl.setAttribute("style", "left: 0")
-                    setTimeout(() => {
-                        fromEl.querySelector("div.water:last-child").remove()
-                        dest.classList.remove("receiving")
-                        
-                        //@@@should not be necessary but there are bugs pouring n>1 waters
-                        render(root, game, palette)
-                    }, 150)
-                }, 600)            
+                animatePour(game, el, pendingMove, to)                
             }          
 
             document.querySelectorAll(".selected").forEach(el => {el.classList.remove("selected")})
