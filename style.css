@@ -140,6 +140,16 @@ nav {
     opacity: 1;
 }
 
+#container {
+    display: flex;
+    align-items: center;
+}
+
+#game {
+    max-width: 700px;
+    flex: 1;
+}
+
 .tipping .tube div.water:last-child,
 #game .new {
     height: 0px;

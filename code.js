@@ -427,7 +427,7 @@ $("#solve").addEventListener("click", () => {
 
     if(history.at(-1).game.tubes.every(t => t.length == 0 || (t.length == 4 && t.every(c => c == t[0])))){
         winAnimation()
-        $("#difficulty").innerHTML("I solved it! Can you?")
+        showMessage("I solved it! Can you?")
     }
 }) 
 
@@ -440,8 +440,8 @@ function getTubePos(idx){
 }
 
 function winAnimation(){
-    let delay = 300
-    let increment = 300
+    let delay = 200
+    let increment = 200
     let idx = 0
     for(const t of history.at(-1).game.tubes){
         if(t.length){
@@ -455,7 +455,7 @@ function winAnimation(){
                 })
             }, Math.round(delay))
             delay += increment
-            increment = increment * 0.8
+            increment = increment * 0.9
         } else {
             ++idx
         }
