@@ -18,7 +18,7 @@ body {
 
 }
 
-.button {    
+.button {
     width: 10em;
     text-align: center;
     height: 3em;
@@ -103,7 +103,7 @@ nav {
 
 .button svg {
     fill: white;
-    width: 24px; 
+    width: 24px;
     height: 24px;
     margin-top: 12px;
 }
@@ -143,6 +143,7 @@ nav {
 #container {
     display: flex;
     align-items: center;
+    flex-direction: column;
 }
 
 #game {
@@ -184,7 +185,7 @@ nav {
     transform: rotate(6deg);
     left: 2.53em;
     opacity: 0;
-    top: -500px;
+    top: -700px;
     transition: top 0.4s 0.5s ease-in;
 
 }

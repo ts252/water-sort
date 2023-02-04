@@ -10,38 +10,41 @@ const myrng = new Math.seedrandom(Date.now());
 
 const $ = x => document.querySelector(x)
 const filterHandler = (sel, h) => (evt => {
-    const el = evt.path.find(e => e.matches && e.matches(sel))
-    if(el){
-        return h(el)
+    let t = evt.target
+    while(t && !t.matches(sel)){
+        t = t.parentNode
+    }
+    if(t){
+        return h(t)
     }
 })
 
 function render(root, game, palette){
     const perRowMap = {
-        0: 0, 
-        1: 1, 
-        2: 2, 
-        3: 3, 
-        4: 2, 
-        5: 3, 
-        6: 3, 
-        7: 4, 
-        8: 4, 
-        9: 5, 
-        10: 5, 
-        11: 6, 
-        12: 6, 
-        13: 5, 
-        14: 5, 
-        15: 5, 
-        16: 6, 
-        17: 6, 
+        0: 0,
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 2,
+        5: 3,
+        6: 3,
+        7: 4,
+        8: 4,
+        9: 5,
+        10: 5,
+        11: 6,
+        12: 6,
+        13: 5,
+        14: 5,
+        15: 5,
+        16: 6,
+        17: 6,
         18: 6
     }
     const perRow = perRowMap[game.tubes.length]
 
     let idx = 0;
-    const tubehtml = game.tubes.map(t => {            
+    const tubehtml = game.tubes.map(t => {
         let amalgamated = []
         for(let c of t){
             if(amalgamated.length == 0 || c != amalgamated.at(-1).c){
@@ -56,9 +59,9 @@ function render(root, game, palette){
                 <div class="stem"></div><div class="mouthpiece"></div>
             </div>
             <div class="topmask">
-                <div class="tube">` + amalgamated.map(({c, n}) => 
-                    `<div class="water c${c} n${n}" style="background-color: #${palette[c]}"/></div>`
-                    ).join("") + 
+                <div class="tube">` + amalgamated.map(({c, n}) =>
+                    `<div class="water c${c} n${n}" style="background-color: ${palette[c]}"/></div>`
+                    ).join("") +
             `</div></div><div class="drip"></div></div></div>`
     })
     let rows = []
@@ -70,12 +73,12 @@ function render(root, game, palette){
 
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
-        let j = Math.floor(myrng() * (i + 1));  
+        let j = Math.floor(myrng() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
 
-function move(game, from, to){        
+function move(game, from, to){
     let copy = {
         tubes: game.tubes.map(t => t.slice(0))
     }
@@ -91,7 +94,7 @@ function isValidMove(game, from, to){
     const tfrom = game.tubes[from]
     const tto = game.tubes[to]
     return from != to &&
-           tfrom.length != 0 &&           
+           tfrom.length != 0 &&
            tto.length < 4 &&
                 (tto.length == 0 ||
                 tto.at(-1) == tfrom.at(-1))
@@ -101,7 +104,7 @@ const solver = (() => {
     let everSeen = {}
     let steps = 0
     let undos = 0
-    
+
     function isSensibleMove(game, from, to){
         const tfrom = game.tubes[from]
         const tto = game.tubes[to]
@@ -139,12 +142,12 @@ const solver = (() => {
         let moves = []
         for(let from = 0; from < game.tubes.length; from++){
             for(let to = 0; to < game.tubes.length; to++){
-                if(isSensibleMove(game, from, to)){                
+                if(isSensibleMove(game, from, to)){
                     const afterMove = move(game, from, to)
                     moves.push({game: afterMove, from, to, score: calcScore(afterMove)})
                 }
             }
-        }    
+        }
 
         moves.sort((a, b) => b.score - a.score)
         return moves
@@ -160,8 +163,8 @@ const solver = (() => {
         if(!nextMove){
             //backtrack
             if(decisionTree.length == 1){
-                console.log("UNSOLVEABLE!!")            
-                decisionTree.impossible = true;            
+                console.log("UNSOLVEABLE!!")
+                decisionTree.impossible = true;
                 return decisionTree
             } else {
                 decisionTree.pop()
@@ -171,7 +174,7 @@ const solver = (() => {
                 return step(decisionTree)
             }
         } else {
-            everSeen[JSON.stringify(nextMove.game)] = true        
+            everSeen[JSON.stringify(nextMove.game)] = true
             state.from = nextMove.from
             state.to = nextMove.to
             decisionTree.push({game: nextMove.game, moves: calculateMoves(nextMove.game), moveIdx: 0})
@@ -199,11 +202,11 @@ const solver = (() => {
         if(!decisionTree.won){
             return null
         }
-        
+
         const solution = decisionTree.map((h) => {
             return {from: h.from, to: h.to, game: h.game}
         }).reverse().slice(0, -2)
-        
+
         return {solution, steps, undos}
     }
 
@@ -217,7 +220,7 @@ function init(nColours){
 
     userUndos = 0
     $("#undos").innerHTML = ""
-    
+
     let contents = []
     for(let i = 0; i < nColours; i++){
         for(let j = 0; j < 4; j++){
@@ -231,78 +234,24 @@ function init(nColours){
     }
     game.tubes.push([])
     game.tubes.push([])
-        
+
     history = [{game}]
-    
+
     const {solution, steps, undos} = solver.solve(game)
     activeSolution = solution
     showMessage(`Difficulty: ${Math.round(steps / numTubes / numTubes * 10)}`    )
 }
 
-const ONE_SIXTH = 1 / 6;
-const ONE_THIRD = 1 / 3;
-const TWO_THIRDS = 2 / 3;
-
-const hue2rgb = (p, q, t) => {
-  if (t < 0) {
-    t += 1;
-  }
-  if (t > 1) {
-    t-= 1;
-  }
-  if (t < ONE_SIXTH) {
-    return p + (q - p) * 6 * t;
-  }
-  if (t < 0.5) {
-    return q;
-  }
-  if (t < TWO_THIRDS) {
-    return p + (q - p) * (TWO_THIRDS - t) * 6;
-  }
-  return p;
-};
-
-const hsl2rgb = (h, s, l) => {
-  if (s === 0) {
-    return new Array(3).fill(l);
-  }
-  const q =
-    l < 0.5 ?
-      l * s + l :
-      l + s - l * s;
-  const p = 2 * l - q;
-  return [
-    hue2rgb(p, q, h + ONE_THIRD),
-    hue2rgb(p, q, h),
-    hue2rgb(p, q, h - ONE_THIRD),
-  ];
-}
-
 function makePalette(n){
-    const base = myrng() * 360
-    const hs = [base, base + 40, base + 180, base + 230].map(x => x % 360)
-    const svs = [55, 30, 80]
-    
-    let rv = []
-    for(const sv of svs){
-        for(const h of hs){
-            rv.push(
-                hsl2rgb(h / 360, sv / 100, sv / 100)
-                    .map(x => Math.round(x * 255))
-                    .map(x => x > 15 ? x.toString(16) : "0" + x.toString(16))
-                    .join("")
-            )                    
-        }
-    }
-    return rv;
+    return ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928'];
 }
 
 let pendingMove = -1
-let palette 
+let palette
 let root = document.querySelector("#game")
 
 function animatePour(game, el, from, to){
-    const fromEl = document.querySelector(`.tubec[data-idx="${from}"]`)    
+    const fromEl = document.querySelector(`.tubec[data-idx="${from}"]`)
     const tippingPosX = el.offsetLeft - fromEl.offsetLeft - 58
     const tippingPosY = el.parentNode.parentNode.offsetTop - fromEl.parentNode.parentNode.offsetTop - 7
     fromEl.setAttribute("style", `left: ${tippingPosX}px; top: ${tippingPosY}px`);
@@ -312,22 +261,22 @@ function animatePour(game, el, from, to){
     const grower = fromEl.querySelector(".tube div:last-child").cloneNode(true)
     grower.classList.add("new")
     dest.querySelector(".tube").appendChild(grower)
-    dest.querySelector(".drip").setAttribute("style", 
+    dest.querySelector(".drip").setAttribute("style",
         grower.getAttribute("style"))
     dest.classList.add("receiving")
     setTimeout(() => {
         grower.classList.remove("new")
     }, 1)
 
-    if(game.tubes[to].length == 4 && 
+    if(game.tubes[to].length == 4 &&
         game.tubes[to].every(c => c == game.tubes[to][0])){
         dest.querySelector(".straw")
-            .classList.add("visible")                            
-    }   
-    
+            .classList.add("visible")
+    }
+
     setTimeout(() => {
         fromEl.classList.remove("tipping")
-        fromEl.setAttribute("style", "left: 0")        
+        fromEl.setAttribute("style", "left: 0")
         setTimeout(() => {
             fromEl.querySelector("div.water:last-child").remove()
             dest.classList.remove("receiving")
@@ -336,14 +285,14 @@ function animatePour(game, el, from, to){
                 winAnimation()
                 showMessage("Awesome!")
             }
-            
+
             //@@@should not be necessary but there are bugs pouring n>1 waters
             setTimeout(() => {
                 render(root, game, palette)
             }, 100);
         }, 150)
-    }, 600)        
-        
+    }, 600)
+
 }
 
 $("#game").addEventListener("click", filterHandler(".tubec", (el) => {
@@ -358,16 +307,16 @@ $("#game").addEventListener("click", filterHandler(".tubec", (el) => {
                 activeSolution = null
                 game = move(game, pendingMove, to)
                 history.push({game, from: pendingMove, to})
-                animatePour(game, el, pendingMove, to)                
-            }          
+                animatePour(game, el, pendingMove, to)
+            }
 
             document.querySelectorAll(".selected").forEach(el => {el.classList.remove("selected")})
-            pendingMove = -1        
+            pendingMove = -1
         } else {
             pendingMove = el.getAttribute("data-idx") - 0
             el.classList.add("selected")
         }
-            
+
     }
 }))
 
@@ -384,7 +333,7 @@ function showMessage(msg){
 }
 
 $("#reset").addEventListener("click", () => {
-    history = [{game: history[0].game}]    
+    history = [{game: history[0].game}]
     pendingMove = -1
     userUndos = 0
     activeSolution = null
@@ -394,10 +343,10 @@ $("#reset").addEventListener("click", () => {
 })
 $("#undo").addEventListener("click", () => {
     if(history.length < 2) return;
-    history.pop()        
+    history.pop()
     pendingMove = -1
     activeSolution = null
-    render(root, history.at(-1).game, palette)    
+    render(root, history.at(-1).game, palette)
     showMessage("Undo!")
     $("#undos").innerHTML = "(" + ++userUndos + ")"
 })
@@ -407,29 +356,29 @@ $("#new").addEventListener("click", () => {
 })
 
 let solving, steps, undos
-$("#solve").addEventListener("click", () => {        
+$("#solve").addEventListener("click", () => {
     if(!activeSolution){
-        const stats = solver.solve(history.at(-1).game)        
-        
+        const stats = solver.solve(history.at(-1).game)
+
         if(!stats){
             showMessage("Can't solve from here!")
             activeSolution = null
         } else {
-            activeSolution = stats.solution            
+            activeSolution = stats.solution
         }
-    } 
-    
-    if(activeSolution){
-        history.push(activeSolution.pop())            
     }
-    
+
+    if(activeSolution){
+        history.push(activeSolution.pop())
+    }
+
     render(root, history.at(-1).game, palette)
 
     if(history.at(-1).game.tubes.every(t => t.length == 0 || (t.length == 4 && t.every(c => c == t[0])))){
         winAnimation()
         showMessage("I solved it! Can you?")
     }
-}) 
+})
 
 function getTubePos(idx){
     const el = document.querySelector(`.tubec[data-idx="${idx}"]`)
@@ -440,8 +389,9 @@ function getTubePos(idx){
 }
 
 function winAnimation(){
-    let delay = 200
+    let delay = 400
     let increment = 200
+    let baseline = 200
     let idx = 0
     for(const t of history.at(-1).game.tubes){
         if(t.length){
@@ -454,8 +404,8 @@ function winAnimation(){
                     origin: pos
                 })
             }, Math.round(delay))
-            delay += increment
-            increment = increment * 0.9
+            delay += increment + baseline
+            increment = increment * 0.8
         } else {
             ++idx
         }
